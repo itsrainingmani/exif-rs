@@ -11,5 +11,8 @@ mod tests {
     fn test_img_file_read() {
         let bytes: Vec<u8> = fs::read("DSCF1197.JPG").unwrap();
         println!("{:#?}", bytes.len());
+
+        // Format the vector as hexadecimal integers with leading zeros
+        println!("{:#04X?}", bytes);
     }
 }
