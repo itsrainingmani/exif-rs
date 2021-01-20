@@ -3,6 +3,8 @@ mod tests {
     use std::fs;
     use std::path::Path;
 
+    use crate::hex_to_u32;
+
     #[test]
     fn test_img_file_read() {
         let bytes: Vec<u8> = fs::read("DSCF1197.JPG").unwrap();
@@ -51,5 +53,26 @@ mod tests {
             "JPG" | "jpg" | "JPEG" | "jpeg" => println!("Valid JPEG File"),
             _ => println!("Not a valid JPEG File"),
         }
+
+        let mut pass_bytes: Vec<u8> = Vec::with_capacity(img_bytes.len());
+
+        let (s1, s2) = (img_bytes.get(4).unwrap(), img_bytes.get(5).unwrap());
+        println!("{} {}", s1, s2);
+
+        // for x in (1..60).step_by(2) {
+        //     let (prev, curr) = (img_bytes.get(x - 1).unwrap(), img_bytes.get(x).unwrap());
+
+        //     match (prev, curr) {
+        //         (255, 216) => println!("SOI"),
+        //         (255, 225) => println!("APP1"),
+        //         (p, c) => {
+        //             println!("{:02X} {:02X}    |    {} {}", p, c, p, c);
+        //             pass_bytes.push(*p);
+        //             pass_bytes.push(*c);
+        //         }
+        //     }
+        // }
+
+        println!("{:#?}", u32::from_str_radix("FFBC", 16));
     }
 }
