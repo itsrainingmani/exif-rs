@@ -1,8 +1,7 @@
 #[cfg(test)]
 mod tests {
     use std::fs;
-
-    use fs::read;
+    use std::path::Path;
 
     #[test]
     fn test_img_file_read() {
@@ -42,7 +41,15 @@ mod tests {
 
     #[test]
     fn test_first_pass() {
-        let img_path = "DSCF1197.JPG";
+        let img_path = Path::new("DSCF1197.JPG");
         let img_bytes = fs::read("DSCF1197.JPG").unwrap();
+
+        let img_ext = img_path.extension().unwrap().to_str().unwrap();
+
+        // Validate the file extension
+        match img_ext {
+            "JPG" | "jpg" | "JPEG" | "jpeg" => println!("Valid JPEG File"),
+            _ => println!("Not a valid JPEG File"),
+        }
     }
 }
