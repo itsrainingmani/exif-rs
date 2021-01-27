@@ -3,7 +3,7 @@ mod tests {
     use std::fs;
     use std::path::Path;
 
-    use crate::hex_to_u32;
+    // use crate::hex_to_u32;
 
     #[test]
     fn test_img_file_read() {
