@@ -81,8 +81,8 @@ mod tests {
         let img_path = Path::new("DSCF1197.JPG");
         let img_bytes = fs::read(img_path).unwrap();
 
-        let mut current_data_size: usize = 0;
-        let mut current_marker_start: usize = 0;
+        let mut current_data_size: usize = 0; // Indicated by the marker (FFBC => 65468)
+        let mut current_marker_start: usize = 0; // Where in the iteration did we start
         let mut is_app1_marker = false;
 
         // Go by steps of 2 since the markers are 2 bytes wide
@@ -105,19 +105,21 @@ mod tests {
                     // Step 1 - Get the marker and convert it to a hex string
 
                     // We only want to look at marker data for the APP1 header since this is where the EXIF data lies
-                    if is_app1_marker {
-                        let marker_hex_string = format!("{:02X}{:02X}", prev, y);
+                    // if is_app1_marker {
 
-                        // This converts a Hex String (Base 16) into a u32
-                        // println!("{:#?}", u32::from_str_radix("FFBC", 16));
-                        // Deducting 2 to count for the size of the marker itself
-                        let marker_size =
-                            u32::from_str_radix(marker_hex_string.as_str(), 16).unwrap() - 2;
-                        current_data_size = marker_size as usize;
-                        current_marker_start = x;
+                    // }
 
-                        println!("{:#?} {:#?}", marker_hex_string, marker_size);
-                    }
+                    let marker_hex_string = format!("{:02X}{:02X}", prev, y);
+
+                    // This converts a Hex String (Base 16) into a u32
+                    // println!("{:#?}", u32::from_str_radix("FFBC", 16));
+                    // Deducting 2 to count for the size of the marker itself
+                    let marker_size =
+                        u32::from_str_radix(marker_hex_string.as_str(), 16).unwrap() - 2;
+                    current_data_size = marker_size as usize;
+                    current_marker_start = x;
+
+                    println!("{:#?} {:#?}", marker_hex_string, marker_size);
                 }
                 _ => {}
             }
