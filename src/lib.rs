@@ -75,4 +75,39 @@ mod tests {
 
         println!("{:#?}", u32::from_str_radix("FFBC", 16));
     }
+
+    #[test]
+    fn test_maintain_state() {
+        let img_path = Path::new("DSCF1197.JPG");
+        let img_bytes = fs::read("DSCF1197.JPG").unwrap();
+
+        let mut pass_bytes: Vec<u8> = Vec::with_capacity(img_bytes.len());
+
+        // This converts a Hex String (Base 16) into a u32
+        // println!("{:#?}", u32::from_str_radix("FFBC", 16));
+
+        let (s1, s2) = (img_bytes.get(0).unwrap(), img_bytes.get(1).unwrap());
+        println!("{} {}", s1, s2);
+
+        let mut current_marker = "";
+
+        if (s1, s2) == (&255, &216) {
+            println!("SOI");
+            current_marker = "FFD8";
+        }
+
+        // Go by steps of 2 since the markers are 2 bytes wide
+        for x in (3..60).step_by(2) {
+            let (prev, curr) = (img_bytes.get(x - 1).unwrap(), img_bytes.get(x).unwrap());
+
+            match (prev, curr) {
+                (255, 225) => println!("APP1"),
+                (p, c) => {
+                    println!("{:02X} {:02X}    |    {} {}", p, c, p, c);
+                    pass_bytes.push(*p);
+                    pass_bytes.push(*c);
+                }
+            }
+        }
+    }
 }
