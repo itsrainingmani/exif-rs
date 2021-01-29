@@ -85,14 +85,11 @@ mod tests {
         let mut current_marker_start: usize = 0; // Where in the iteration did we start
         let mut is_app1_marker = false;
 
+        let mut marker_bytes: Vec<u8> = Vec::new();
+
         // Go by steps of 2 since the markers are 2 bytes wide
         for x in (1..img_bytes.len()).step_by(2) {
             let (prev, curr) = (img_bytes.get(x - 1).unwrap(), img_bytes.get(x).unwrap());
-
-            // When the end of the app1 marker has been reached
-            if is_app1_marker && x + current_marker_start > current_data_size {
-                is_app1_marker = false;
-            }
 
             match (prev, curr) {
                 (255, 216) => println!("FFD8 - SOI Marker @ {}", x),
@@ -100,14 +97,8 @@ mod tests {
                     println!("FFE1 - APP1 Marker @ {}", x);
                     is_app1_marker = true;
                 }
-                (255, y) => {
-                    // This means that we're processing some other kind of marker
-                    // Step 1 - Get the marker and convert it to a hex string
-
-                    // We only want to look at marker data for the APP1 header since this is where the EXIF data lies
-                    // if is_app1_marker {
-
-                    // }
+                (255, y) if is_app1_marker => {
+                    println!("Within APP1 marker");
 
                     let marker_hex_string = format!("{:02X}{:02X}", prev, y);
 
@@ -119,7 +110,19 @@ mod tests {
                     current_data_size = marker_size as usize;
                     current_marker_start = x;
 
+                    // if x == current_data_size + current_marker_start {}
+
                     println!("{:#?} {:#?}", marker_hex_string, marker_size);
+                }
+                (p, c) if is_app1_marker => {
+                    if x + current_marker_start >= current_data_size {
+                        is_app1_marker = false;
+                        println!("Size of marker bytes: {}", marker_bytes.len());
+                    }
+
+                    // println!("{:02X}{:02X}", p, c);
+                    marker_bytes.push(*p);
+                    marker_bytes.push(*c);
                 }
                 _ => {}
             }
