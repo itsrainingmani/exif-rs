@@ -57,7 +57,7 @@ mod tests {
         let mut pass_bytes: Vec<u8> = Vec::with_capacity(img_bytes.len());
 
         let (s1, s2) = (img_bytes.get(4).unwrap(), img_bytes.get(5).unwrap());
-        println!("{} {}", s1, s2);
+        println!("{:02X}{:02X}", s1, s2);
 
         // for x in (1..60).step_by(2) {
         //     let (prev, curr) = (img_bytes.get(x - 1).unwrap(), img_bytes.get(x).unwrap());
@@ -79,34 +79,47 @@ mod tests {
     #[test]
     fn test_maintain_state() {
         let img_path = Path::new("DSCF1197.JPG");
-        let img_bytes = fs::read("DSCF1197.JPG").unwrap();
+        let img_bytes = fs::read(img_path).unwrap();
 
-        let mut pass_bytes: Vec<u8> = Vec::with_capacity(img_bytes.len());
-
-        // This converts a Hex String (Base 16) into a u32
-        // println!("{:#?}", u32::from_str_radix("FFBC", 16));
-
-        let (s1, s2) = (img_bytes.get(0).unwrap(), img_bytes.get(1).unwrap());
-        println!("{} {}", s1, s2);
-
-        let mut current_marker = "";
-
-        if (s1, s2) == (&255, &216) {
-            println!("SOI");
-            current_marker = "FFD8";
-        }
+        let mut current_data_size: usize = 0;
+        let mut current_marker_start: usize = 0;
+        let mut is_app1_marker = false;
 
         // Go by steps of 2 since the markers are 2 bytes wide
-        for x in (3..60).step_by(2) {
+        for x in (1..img_bytes.len()).step_by(2) {
             let (prev, curr) = (img_bytes.get(x - 1).unwrap(), img_bytes.get(x).unwrap());
 
+            // When the end of the app1 marker has been reached
+            if is_app1_marker && x + current_marker_start > current_data_size {
+                is_app1_marker = false;
+            }
+
             match (prev, curr) {
-                (255, 225) => println!("APP1"),
-                (p, c) => {
-                    println!("{:02X} {:02X}    |    {} {}", p, c, p, c);
-                    pass_bytes.push(*p);
-                    pass_bytes.push(*c);
+                (255, 216) => println!("FFD8 - SOI Marker @ {}", x),
+                (255, 225) => {
+                    println!("FFE1 - APP1 Marker @ {}", x);
+                    is_app1_marker = true;
                 }
+                (255, y) => {
+                    // This means that we're processing some other kind of marker
+                    // Step 1 - Get the marker and convert it to a hex string
+
+                    // We only want to look at marker data for the APP1 header since this is where the EXIF data lies
+                    if is_app1_marker {
+                        let marker_hex_string = format!("{:02X}{:02X}", prev, y);
+
+                        // This converts a Hex String (Base 16) into a u32
+                        // println!("{:#?}", u32::from_str_radix("FFBC", 16));
+                        // Deducting 2 to count for the size of the marker itself
+                        let marker_size =
+                            u32::from_str_radix(marker_hex_string.as_str(), 16).unwrap() - 2;
+                        current_data_size = marker_size as usize;
+                        current_marker_start = x;
+
+                        println!("{:#?} {:#?}", marker_hex_string, marker_size);
+                    }
+                }
+                _ => {}
             }
         }
     }
