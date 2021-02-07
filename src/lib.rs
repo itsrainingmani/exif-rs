@@ -3,6 +3,8 @@ mod tests {
     use std::fs;
     use std::path::Path;
 
+    use crate::convert_to_hex;
+
     // use crate::hex_to_u32;
 
     #[test]
@@ -122,16 +124,19 @@ mod tests {
             // Check if the Exif header is present - 45786969 0000
             // This translates to Exif0000
 
-            let exif_header = app1_bytes
-                .get(0..6)
-                .unwrap()
-                .iter()
-                .map(|a| format!("{:02X}", a))
-                .collect::<Vec<String>>()
-                .join("");
+            let exif_header = convert_to_hex(&app1_bytes, 0, 6).unwrap();
             if exif_header == String::from("457869660000") {
                 println!("Exif Header is present");
             }
         }
     }
+}
+
+fn convert_to_hex(v: &Vec<u8>, start: usize, end: usize) -> Result<String, &'static str> {
+    Ok(v.get(start..end)
+        .unwrap()
+        .iter()
+        .map(|a| format!("{:02X}", a))
+        .collect::<Vec<String>>()
+        .join(""))
 }
