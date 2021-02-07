@@ -87,45 +87,77 @@ mod tests {
 
         let mut marker_bytes: Vec<u8> = Vec::new();
 
-        // Go by steps of 2 since the markers are 2 bytes wide
-        for x in (1..img_bytes.len()).step_by(2) {
-            let (prev, curr) = (img_bytes.get(x - 1).unwrap(), img_bytes.get(x).unwrap());
+        // println!("{:#?}", img_bytes.get(0..2).unwrap());
 
-            match (prev, curr) {
-                (255, 216) => println!("FFD8 - SOI Marker @ {}", x),
-                (255, 225) => {
-                    println!("FFE1 - APP1 Marker @ {}", x);
-                    is_app1_marker = true;
-                }
-                (255, y) if is_app1_marker => {
-                    println!("Within APP1 marker");
-
-                    let marker_hex_string = format!("{:02X}{:02X}", prev, y);
-
-                    // This converts a Hex String (Base 16) into a u32
-                    // println!("{:#?}", u32::from_str_radix("FFBC", 16));
-                    // Deducting 2 to count for the size of the marker itself
-                    let marker_size =
-                        u32::from_str_radix(marker_hex_string.as_str(), 16).unwrap() - 2;
-                    current_data_size = marker_size as usize;
-                    current_marker_start = x;
-
-                    // if x == current_data_size + current_marker_start {}
-
-                    println!("{:#?} {:#?}", marker_hex_string, marker_size);
-                }
-                (p, c) if is_app1_marker => {
-                    if x + current_marker_start >= current_data_size {
-                        is_app1_marker = false;
-                        println!("Size of marker bytes: {}", marker_bytes.len());
-                    }
-
-                    // println!("{:02X}{:02X}", p, c);
-                    marker_bytes.push(*p);
-                    marker_bytes.push(*c);
-                }
-                _ => {}
-            }
+        if let &[255, 216] = img_bytes.get(0..2).unwrap() {
+            println!("SOI Marker");
+        } else {
+            println!("SOI Marker FFD8 not found");
+            std::process::exit(-1);
         }
+
+        if let &[255, 225] = img_bytes.get(2..4).unwrap() {
+            println!("APP1 Marker");
+            is_app1_marker = true;
+        } else {
+            println!("APP1 Marker FFE1 not found");
+            std::process::exit(-1);
+        }
+
+        if is_app1_marker {
+            println!("Within APP1 Marker section");
+
+            // Get the size of the APP1 segment
+            let app1_size_hex = format!(
+                "{:02X}{:02X}",
+                img_bytes.get(4).unwrap(),
+                img_bytes.get(5).unwrap()
+            );
+
+            let app1_size = u32::from_str_radix(app1_size_hex.as_str(), 16).unwrap();
+
+            println!("{:#?} {:#?}", app1_size_hex, app1_size);
+        }
+
+        // Go by steps of 2 since the markers are 2 bytes wide
+        //     for x in (1..100).step_by(2) {
+        //         let (prev, curr) = (img_bytes.get(x - 1).unwrap(), img_bytes.get(x).unwrap());
+
+        //         match (prev, curr) {
+        //             (255, 216) => println!("FFD8 - SOI Marker @ {}", x),
+        //             (255, 225) => {
+        //                 println!("FFE1 - APP1 Marker @ {}", x);
+        //                 is_app1_marker = true;
+        //             }
+        //             // (255, y) if is_app1_marker => {
+        //             //     println!("Within APP1 marker");
+
+        //             //     let marker_hex_string = format!("{:02X}{:02X}", prev, y);
+
+        //             //     // This converts a Hex String (Base 16) into a u32
+        //             //     // println!("{:#?}", u32::from_str_radix("FFBC", 16));
+        //             //     // Deducting 2 to count for the size of the marker itself
+        //             //     let marker_size =
+        //             //         u32::from_str_radix(marker_hex_string.as_str(), 16).unwrap() - 2;
+        //             //     current_data_size = marker_size as usize;
+        //             //     current_marker_start = x;
+
+        //             //     // if x == current_data_size + current_marker_start {}
+
+        //             //     println!("{:#?} {:#?}", marker_hex_string, marker_size);
+        //             // }
+        //             (p, c) if is_app1_marker => {
+        //                 // if x + current_marker_start >= current_data_size {
+        //                 //     is_app1_marker = false;
+        //                 //     println!("Size of marker bytes: {}", marker_bytes.len());
+        //                 // }
+
+        //                 println!("{:02X} {:02X} | {:#?} {:#?} | {:#?}", p, c, p, c, x);
+        //                 // marker_bytes.push(*p);
+        //                 // marker_bytes.push(*c);
+        //             }
+        //             _ => {}
+        //         }
+        //     }
     }
 }
