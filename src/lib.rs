@@ -81,13 +81,7 @@ mod tests {
         let img_path = Path::new("DSCF1197.JPG");
         let img_bytes = fs::read(img_path).unwrap();
 
-        let mut current_data_size: usize = 0; // Indicated by the marker (FFBC => 65468)
-        let mut current_marker_start: usize = 0; // Where in the iteration did we start
         let mut is_app1_marker = false;
-
-        let mut marker_bytes: Vec<u8> = Vec::new();
-
-        // println!("{:#?}", img_bytes.get(0..2).unwrap());
 
         if let &[255, 216] = img_bytes.get(0..2).unwrap() {
             println!("SOI Marker");
