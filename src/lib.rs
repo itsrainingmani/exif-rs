@@ -114,9 +114,16 @@ mod tests {
                 img_bytes.get(5).unwrap()
             );
 
-            let app1_size = u32::from_str_radix(app1_size_hex.as_str(), 16).unwrap();
+            // This converts a Hex String (Base 16) into a usize
+            // println!("{:#?}", usize::from_str_radix("FFBC", 16));
+            // Deducting 2 to count for the size of the marker itself
+            let app1_data_size = usize::from_str_radix(app1_size_hex.as_str(), 16).unwrap() - 2;
+            let app1_data_end = app1_data_size + 6;
 
-            println!("{:#?} {:#?}", app1_size_hex, app1_size);
+            println!("{:#?} {:#?}", app1_size_hex, app1_data_size);
+
+            let app1_bytes: Vec<u8> = Vec::from(img_bytes.get(6..app1_data_end).unwrap());
+            println!("Size of App1 Bytes Vector - {:#?}", app1_bytes.len());
         }
 
         // Go by steps of 2 since the markers are 2 bytes wide
