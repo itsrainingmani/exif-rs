@@ -8,15 +8,32 @@ pub mod exif {
             .join(""))
     }
 
+    pub type ExifVec = Vec<u8>;
+    pub trait Exif {
+        fn convert_to_hex(&self, start: usize, end: usize) -> Result<String, &'static str>;
+    }
+
+    impl Exif for ExifVec {
+        fn convert_to_hex(&self, start: usize, end: usize) -> Result<String, &'static str> {
+            Ok(self
+                .get(start..end)
+                .unwrap()
+                .iter()
+                .map(|a| format!("{:02X}", a))
+                .collect::<Vec<String>>()
+                .join(""))
+        }
+    }
+
     #[cfg(test)]
     mod tests {
-        use super::convert_to_hex;
+        use super::{convert_to_hex, ExifVec};
         use std::fs;
         use std::path::Path;
 
         #[test]
         fn test_img_file_read() {
-            let bytes: Vec<u8> = fs::read("DSCF1197.JPG").unwrap();
+            let bytes: ExifVec = fs::read("DSCF1197.JPG").unwrap();
             println!("{:#?}", bytes.len());
 
             // Format the vector as hexadecimal integers with leading zeros
