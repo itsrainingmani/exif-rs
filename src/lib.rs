@@ -1,6 +1,4 @@
 pub mod exif {
-    use std::fs;
-    use std::path::Path;
 
     fn convert_to_hex(v: &Vec<u8>, start: usize, end: usize) -> Result<String, &'static str> {
         Ok(v.get(start..end)
