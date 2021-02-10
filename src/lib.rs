@@ -91,9 +91,10 @@ pub mod exif {
         }
 
         #[test]
-        fn test_vector_sizes() {
+        fn test_buncha_stuff() {
             // u8 is 8 bit unsigned integer -> 1 byte of data
             let bytes: Vec<u8> = fs::read("DSCF1197.JPG").unwrap();
+            let img_path = Path::new("DSCF1197.JPG");
 
             println!("Size of u8 Vec: {}", bytes.capacity());
 
@@ -103,11 +104,6 @@ pub mod exif {
             let hex_bytes: Vec<String> = bytes.iter().map(|b| format!("{:X}", b)).collect();
 
             println!("Size of String Vec: {}", hex_bytes.capacity());
-        }
-
-        #[test]
-        fn test_find_exif_marker() {
-            let bytes = fs::read("DSCF1197.JPG").unwrap();
 
             println!("{:#?} {:#?}", bytes.get(0).unwrap(), bytes.get(1).unwrap());
             // 255 216 => FF D8
@@ -115,12 +111,6 @@ pub mod exif {
             // 255 225 => FF E1
 
             // println!("{:#?}", hex_bytes.get(0..20).unwrap());
-        }
-
-        #[test]
-        fn test_first_pass() {
-            let img_path = Path::new("DSCF1197.JPG");
-            let img_bytes = fs::read("DSCF1197.JPG").unwrap();
 
             let img_ext = img_path.extension().unwrap().to_str().unwrap();
 
@@ -130,9 +120,9 @@ pub mod exif {
                 _ => println!("Not a valid JPEG File"),
             }
 
-            let mut pass_bytes: Vec<u8> = Vec::with_capacity(img_bytes.len());
+            let mut pass_bytes: Vec<u8> = Vec::with_capacity(bytes.len());
 
-            let (s1, s2) = (img_bytes.get(4).unwrap(), img_bytes.get(5).unwrap());
+            let (s1, s2) = (bytes.get(4).unwrap(), bytes.get(5).unwrap());
             println!("{:02X}{:02X}", s1, s2);
 
             // for x in (1..60).step_by(2) {
